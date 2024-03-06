@@ -6,11 +6,17 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 func CreateBank(ctx *gin.Context) {
 	var bank models.Bank
 	if err := ctx.ShouldBindJSON(&bank); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	validate := validator.New()
+	if err := validate.Struct(bank); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -35,6 +41,11 @@ func UpdateBank(ctx *gin.Context) {
 	var bank *models.Bank
 	if err := ctx.ShouldBindJSON(&bank); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	validate := validator.New()
+	if err := validate.Struct(bank); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 	res, err := queries.UpdateBank(bank)
 	if err != nil {
